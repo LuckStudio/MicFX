@@ -1,5 +1,5 @@
 /* MicFX · service worker: funciona sin conexión y se actualiza solo (sube la versión al publicar cambios). */
-const V = 'micfx-v2';
+const V = 'micfx-v3';
 const SHELL = ['./', 'index.html', 'css/styles.css', 'js/main.js', 'js/data.js', 'js/engine.js', 'js/store.js', 'js/worklet.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-180.png'];
 

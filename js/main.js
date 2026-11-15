@@ -1,7 +1,7 @@
 /* =========================================================
    MicFX · interfaz y estado
    ========================================================= */
-import {DEFAULTS, KEYS, SCALES, COLORS, CATS, LISTEN, EFFECTS, resolve, AMBIENT_KEYS} from './data.js';
+import {DEFAULTS, KEYS, SCALES, COLORS, CATS, LISTEN, EFFECTS, GOAL_ICONS, resolve, AMBIENT_KEYS} from './data.js';
 import {store, takesDB} from './store.js';
 import * as eng from './engine.js';
 
@@ -16,6 +16,15 @@ const el = (tag, attrs = {}, ...kids) => {
   }
   kids.forEach(k => e.append(k));
   return e;
+};
+
+/* Icono de línea (las rutas son constantes del propio código) */
+const ico = (inner, size = 28) => {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('width', size); s.setAttribute('height', size);
+  s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '1.5');
+  s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.setAttribute('aria-hidden', 'true');
+  s.innerHTML = inner; return s;
 };
 
 /* ---------- estado ---------- */
@@ -75,14 +84,14 @@ function renderTabs() {
   CATS.filter(c => c.id !== 'mine' || state.mine.length).forEach(c => {
     t.append(el('button', {class: 'tab', role: 'tab', 'aria-selected': String(c.id === state.cat), onclick: () => {
       state.cat = c.id; renderTabs(); renderCards(); persistSoon();
-    }}, el('span', {class: 't-ico'}, c.icon), c.name));
+    }}, c.name));
   });
 }
 function renderCards() {
   const box = $('#cards'); box.innerHTML = '';
   allFx().filter(f => f.cat === state.cat).forEach(f => {
     const c = el('button', {class: 'card', 'aria-pressed': String(f.id === state.fx), onclick: () => selectFx(f.id)},
-      el('span', {class: 'c-ico'}, f.emoji), f.name);
+      el('i', {class: 'led', style: '--c:' + (f.c || '#8a8880')}), f.name);
     if (f.custom) {
       c.append(el('span', {class: 'del', role: 'button', 'aria-label': 'Borrar ' + f.name, onclick: e => {
         e.stopPropagation();
@@ -140,8 +149,8 @@ function updateHero() {
   const L = LISTEN[state.listen], fx = curFx();
   $('#heroTitle').textContent = state.on ? (state.monitor ? '¡En directo!' : 'Solo grabando (sin escucha)') : 'Toca para empezar';
   $('#heroSub').textContent = state.on
-    ? fx.emoji + ' ' + fx.name + ' · ' + L.icon + ' ' + L.name
-    : 'Te escucharás con ' + L.icon + ' ' + L.name + ' · cambiar';
+    ? fx.name + ' · ' + L.name
+    : 'Te escucharás con ' + L.name + ' · cambiar';
 }
 function mapErr(e) {
   if (e && e.code === 'unsupported') return 'Este navegador no deja usar el micrófono aquí. Abre la página desde una dirección https:// en Chrome o Safari.';
@@ -254,7 +263,6 @@ function renderTuner() {
 function renderMon() {
   const b = $('#btnMon');
   b.setAttribute('aria-pressed', String(state.monitor));
-  b.querySelector('.d-ico').textContent = state.monitor ? '🎧' : '🔇';
   b.querySelector('.d-txt').textContent = state.monitor ? 'Escuchándote' : 'Sin escucha';
   updateHero();
 }
@@ -290,7 +298,7 @@ function startRec() {
   rec.start(250);
   recStart = Date.now();
   const b = $('#btnRec'); b.classList.add('rec');
-  const upd = () => { b.querySelector('.d-txt').textContent = fmtDur((Date.now() - recStart) / 1000); b.querySelector('.d-ico').textContent = '⏹'; };
+  const upd = () => { b.querySelector('.d-txt').textContent = fmtDur((Date.now() - recStart) / 1000); };
   upd(); recTimer = setInterval(upd, 500);
 }
 function stopRec() {
@@ -298,7 +306,7 @@ function stopRec() {
   recorder = null;
   clearInterval(recTimer);
   const b = $('#btnRec'); b.classList.remove('rec');
-  b.querySelector('.d-txt').textContent = 'Grabar'; b.querySelector('.d-ico').textContent = '⏺';
+  b.querySelector('.d-txt').textContent = 'Grabar';
 }
 $('#btnRec').addEventListener('click', () => { recorder ? stopRec() : startRec(); });
 
@@ -314,7 +322,7 @@ function addTake(blob, dur, fxName) {
   takesDB.put(take);
   renderBadge();
   if ($('#takesDlg').open) renderTakes();
-  toast('Grabación guardada en 🎞️ Grabaciones');
+  toast('Grabación guardada en Tomas');
 }
 function renderBadge() {
   const b = $('#takesBadge');
@@ -330,19 +338,19 @@ function renderTakes() {
     const ext = t.type.includes('mp4') ? 'm4a' : t.type.includes('ogg') ? 'ogg' : 'webm';
     const fname = 'micfx-' + stamp(new Date(t.id)) + '.' + ext;
     const row = el('div', {class: 'row'});
-    row.append(el('button', {onclick: () => { const a = el('a', {href: url, download: fname}); document.body.append(a); a.click(); a.remove(); }}, '⬇ Descargar'));
+    row.append(el('button', {onclick: () => { const a = el('a', {href: url, download: fname}); document.body.append(a); a.click(); a.remove(); }}, 'Descargar'));
     const file = new File([t.blob], fname, {type: t.type});
     if (navigator.canShare && navigator.canShare({files: [file]})) {
-      row.append(el('button', {onclick: async () => { try { await navigator.share({files: [file], title: t.name}); } catch (e) {} }}, '↗ Compartir'));
+      row.append(el('button', {onclick: async () => { try { await navigator.share({files: [file], title: t.name}); } catch (e) {} }}, 'Compartir'));
     }
     row.append(el('button', {'aria-label': 'Renombrar', onclick: () => {
       const n = prompt('Nombre de la grabación', t.name);
       if (n && n.trim()) { t.name = n.trim().slice(0, 60); takesDB.put(t); renderTakes(); }
-    }}, '✏️'));
-    const del = el('button', {class: 'danger', 'aria-label': 'Borrar'}, '🗑');
+    }}, 'Renombrar'));
+    const del = el('button', {class: 'danger', 'aria-label': 'Borrar'}, 'Borrar');
     let armed = false;
     del.addEventListener('click', () => {
-      if (!armed) { armed = true; del.classList.add('sure'); del.textContent = '¿Borrar?'; setTimeout(() => { armed = false; del.classList.remove('sure'); del.textContent = '🗑'; }, 2500); return; }
+      if (!armed) { armed = true; del.classList.add('sure'); del.textContent = '¿Seguro?'; setTimeout(() => { armed = false; del.classList.remove('sure'); del.textContent = 'Borrar'; }, 2500); return; }
       state.takes = state.takes.filter(x => x.id !== t.id); takesDB.del(t.id); renderBadge(); renderTakes();
     });
     row.append(del);
@@ -438,7 +446,7 @@ function syncAdv() {
   }
 }
 $('#btnAdv').addEventListener('click', () => {
-  $('#advNote').textContent = 'Efecto actual: ' + curFx().emoji + ' ' + curFx().name + '. Los cambios se oyen al momento.';
+  $('#advNote').textContent = 'Efecto actual: ' + curFx().name + '. Los cambios se oyen al momento.';
   openDlg('#advDlg');
 });
 $('#resetFx').addEventListener('click', () => {
@@ -451,7 +459,7 @@ function savePreset() {
   const P = getParams(), p = {};
   Object.keys(DEFAULTS).forEach(k => p[k] = P[k]);
   const i = state.mine.findIndex(x => x.name === name);
-  const fx = {id: i >= 0 ? state.mine[i].id : 'u' + Date.now(), custom: true, cat: 'mine', emoji: '★', name, desc: 'Efecto guardado por ti.', p};
+  const fx = {id: i >= 0 ? state.mine[i].id : 'u' + Date.now(), custom: true, cat: 'mine', c: '#8a8880', name, desc: 'Efecto guardado por ti.', p};
   if (i >= 0) state.mine[i] = fx; else state.mine.push(fx);
   inp.value = '';
   state.fx = fx.id; state.cat = 'mine'; state.over = {};
@@ -477,11 +485,11 @@ async function renderSettings() {
   const choices = el('div', {class: 'choices', style: 'grid-template-columns:1fr 1fr'});
   const hint = el('p', {class: 'listen-hint'}, LISTEN[state.listen].hint);
   Object.entries(LISTEN).forEach(([id, L]) => {
-    choices.append(el('button', {class: 'choice', style: 'min-height:78px', 'aria-pressed': String(id === state.listen), onclick: () => {
+    choices.append(el('button', {class: 'choice', style: 'min-height:84px', 'aria-pressed': String(id === state.listen), onclick: () => {
       applyListen(id, false);
       choices.querySelectorAll('.choice').forEach(b => b.setAttribute('aria-pressed', String(b === choices.children[Object.keys(LISTEN).indexOf(id)])));
       hint.textContent = L.hint; syncSettingsToggles();
-    }}, el('span', {class: 'c-ico'}, L.icon), L.name));
+    }}, ico(L.svg, 26), L.name));
   });
   box.append(choices, hint);
 
@@ -555,10 +563,10 @@ document.querySelectorAll('dialog.sheet').forEach(d => {
 });
 
 const GOALS = [
-  {cat: 'hablar', icon: '🗣️', name: 'Hablar más alto'},
-  {cat: 'voces', icon: '🎭', name: 'Cambiar mi voz'},
-  {cat: 'cantar', icon: '🎤', name: 'Cantar (karaoke)'},
-  {cat: 'inst', icon: '🎸', name: 'Tocar un instrumento'}
+  {cat: 'hablar', name: 'Hablar más alto'},
+  {cat: 'voces', name: 'Cambiar mi voz'},
+  {cat: 'cantar', name: 'Cantar (karaoke)'},
+  {cat: 'inst', name: 'Tocar un instrumento'}
 ];
 function showIntro() {
   const step = n => document.querySelectorAll('#introDlg .step').forEach(s => s.classList.toggle('hidden', s.dataset.step !== String(n)));
@@ -570,14 +578,14 @@ function showIntro() {
     const first = EFFECTS.find(f => f.cat === o.cat);
     state.fx = first.id; state.over = {};
     renderAll(); pushAudio(true); step(2);
-  }}, el('span', {class: 'c-ico'}, o.icon), o.name)));
+  }}, ico(GOAL_ICONS[o.cat], 26), o.name)));
   const l = $('#listenChoices'); l.innerHTML = '';
   Object.entries(LISTEN).forEach(([id, L]) => l.append(el('button', {class: 'choice', 'aria-pressed': 'false', onclick: e => {
     applyListen(id, true);
     l.querySelectorAll('.choice').forEach(b => b.setAttribute('aria-pressed', 'false'));
     e.currentTarget.setAttribute('aria-pressed', 'true');
     $('#listenHint').textContent = L.hint; $('#introGo').disabled = false;
-  }}, el('span', {class: 'c-ico'}, L.icon), L.name)));
+  }}, ico(L.svg, 26), L.name)));
   openDlg('#introDlg');
 }
 $('#introGo').addEventListener('click', () => $('#introDlg').close());

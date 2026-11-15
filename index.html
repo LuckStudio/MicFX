@@ -4,26 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="MicFX: usa tu móvil como micrófono con efectos en tiempo real. Megáfono, voces, karaoke con autotune e instrumentos.">
-<meta name="theme-color" content="#0e0f13">
+<meta name="theme-color" content="#e8e7e2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161618" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MicFX">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>MicFX</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <div id="app">
 
   <header class="top">
-    <h1 class="logo"><span class="logo-mark" aria-hidden="true">🎙️</span>MicFX</h1>
+    <h1 class="logo"><span class="logo-mark" aria-hidden="true"></span>MicFX</h1>
     <div class="top-actions">
-      <button id="latChip" class="lat hidden" aria-label="Retardo estimado" title="Retardo estimado (de la voz al altavoz)">⏱ <b id="latVal">–</b></button>
-      <button id="btnSettings" class="icon-btn" aria-label="Ajustes">⚙️</button>
-      <button id="btnHelp" class="icon-btn" aria-label="Ayuda">?</button>
+      <button id="latChip" class="lat hidden" aria-label="Retardo estimado" title="Retardo estimado (de la voz al altavoz)"><b id="latVal">–</b></button>
+      <button id="btnSettings" class="icon-btn" aria-label="Ajustes"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+      <button id="btnHelp" class="icon-btn" aria-label="Ayuda"><span style="font:500 15px var(--mono)">?</span></button>
     </div>
   </header>
 
@@ -31,10 +35,7 @@
     <!-- 1 · Encender -->
     <section class="hero" aria-label="Micrófono">
       <button id="power" class="power" aria-pressed="false" aria-label="Encender micro">
-        <svg viewBox="0 0 24 24" width="54" height="54" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="9" y="2.5" width="6" height="12" rx="3"/>
-          <path d="M5 11.5a7 7 0 0 0 14 0M12 18.5V22M8.5 22h7"/>
-        </svg>
+        <span class="mic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11.5a7 7 0 0 0 14 0M12 18.5V22M8.5 22h7"/></svg></span>
       </button>
       <p id="heroTitle" class="hero-title">Toca para empezar</p>
       <button id="heroSub" class="hero-sub linklike"></button>
@@ -45,11 +46,12 @@
         <div class="tuner-scale"><i id="tunerNeedle"></i></div>
         <div class="tuner-cents" id="tunerCents">Canta para ver la nota…</div>
       </div>
-      <button id="abBtn" class="ab hidden">👂 Mantén pulsado para oír sin efecto</button>
+      <button id="abBtn" class="ab hidden">Mantén pulsado · oír sin efecto</button>
     </section>
 
     <!-- 2 · Elegir efecto -->
     <section class="panel" aria-label="Efectos">
+      <h2 class="sec">Efecto</h2>
       <div id="tabs" class="tabs" role="tablist"></div>
       <div id="cards" class="cards"></div>
       <p id="fxDesc" class="fx-desc"></p>
@@ -57,6 +59,7 @@
 
     <!-- 3 · Ajustes rápidos -->
     <section class="panel" aria-label="Ajustes rápidos">
+      <h2 class="sec">Ajuste</h2>
       <label class="slider" id="rowI">
         <span class="s-top"><b>Intensidad</b><output id="oI"></output></span>
         <input type="range" id="sI" min="0" max="100" step="1">
@@ -74,15 +77,15 @@
         <span class="s-top"><b>Volumen</b><output id="oV"></output></span>
         <input type="range" id="sV" min="0" max="150" step="1">
       </label>
-      <button id="btnAdv" class="btn-wide">🎛️ Ajustar a fondo</button>
+      <button id="btnAdv" class="btn-wide">Ajustar a fondo</button>
     </section>
   </main>
 
   <!-- Barra inferior -->
   <nav class="dock" aria-label="Acciones">
-    <button id="btnMon" class="dock-btn" aria-pressed="true"><span class="d-ico">🎧</span><span class="d-txt">Escuchándote</span></button>
-    <button id="btnRec" class="dock-btn" disabled><span class="d-ico">⏺</span><span class="d-txt">Grabar</span></button>
-    <button id="btnTakes" class="dock-btn"><span class="d-ico">🎞️<em id="takesBadge" class="badge hidden">0</em></span><span class="d-txt">Grabaciones</span></button>
+    <button id="btnMon" class="dock-btn" aria-pressed="true"><span class="d-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></span><span class="d-txt">Escuchándote</span></button>
+    <button id="btnRec" class="dock-btn" disabled><span class="d-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span><span class="d-txt">Grabar</span></button>
+    <button id="btnTakes" class="dock-btn"><span class="d-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9"/></svg><em id="takesBadge" class="badge hidden">0</em></span><span class="d-txt">Tomas</span></button>
   </nav>
 </div>
 
@@ -92,7 +95,7 @@
 <dialog id="advDlg" class="sheet" aria-labelledby="advTitle">
   <div class="sheet-head">
     <h2 id="advTitle">Ajustar a fondo</h2>
-    <button class="icon-btn close" data-close aria-label="Cerrar">✕</button>
+    <button class="icon-btn close" data-close aria-label="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="sheet-body">
     <p class="note" id="advNote">Aquí están todos los ajustes. Los cambios se aplican al momento.</p>
@@ -103,7 +106,7 @@
         <input type="text" id="presetName" placeholder="Nombre (p. ej. Mi voz de radio)" maxlength="24" aria-label="Nombre del efecto">
         <button id="savePreset" class="btn">Guardar</button>
       </div>
-      <button id="resetFx" class="btn-ghost">↺ Restablecer este efecto</button>
+      <button id="resetFx" class="btn-ghost">Restablecer este efecto</button>
     </div>
   </div>
 </dialog>
@@ -112,7 +115,7 @@
 <dialog id="setDlg" class="sheet" aria-labelledby="setTitle">
   <div class="sheet-head">
     <h2 id="setTitle">Ajustes</h2>
-    <button class="icon-btn close" data-close aria-label="Cerrar">✕</button>
+    <button class="icon-btn close" data-close aria-label="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="sheet-body" id="setBody"></div>
 </dialog>
@@ -121,12 +124,12 @@
 <dialog id="takesDlg" class="sheet" aria-labelledby="takesTitle">
   <div class="sheet-head">
     <h2 id="takesTitle">Grabaciones</h2>
-    <button class="icon-btn close" data-close aria-label="Cerrar">✕</button>
+    <button class="icon-btn close" data-close aria-label="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="sheet-body">
     <p class="note">Se guardan en este navegador. Descárgalas o compártelas para conservarlas.</p>
     <div id="takes"></div>
-    <p id="takesEmpty" class="empty">Aún no has grabado nada.<br>Enciende el micro y pulsa ⏺ Grabar.</p>
+    <p id="takesEmpty" class="empty">Aún no has grabado nada.<br>Enciende el micro y pulsa Grabar.</p>
   </div>
 </dialog>
 
@@ -134,7 +137,7 @@
 <dialog id="helpDlg" class="sheet" aria-labelledby="helpTitle">
   <div class="sheet-head">
     <h2 id="helpTitle">Ayuda y consejos</h2>
-    <button class="icon-btn close" data-close aria-label="Cerrar">✕</button>
+    <button class="icon-btn close" data-close aria-label="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="sheet-body help">
     <h3>Empezar</h3>
